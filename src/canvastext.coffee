@@ -48,6 +48,9 @@ canvastext = (config) ->
       else if cursorpos.line > 0
         cursorpos.line--
         cursorpos.character = lines[cursorpos.line].length
+        lines[cursorpos.line] += lines[cursorpos.line + 1]
+        for i in [cursorpos.line + 1 ... lines.length - 1]
+          lines[i] = lines[i + 1]
         lines.pop()
         repaint()
 
@@ -64,8 +67,9 @@ canvastext = (config) ->
 
     lineBreak = ->
       cursorpos.line++
-      lines.push('') if lines.length == cursorpos.line
-      cursorpos.character = lines[cursorpos.line].length
+      lines.splice(cursorpos.line, 0, lines[cursorpos.line - 1].substr(cursorpos.character))
+      lines[cursorpos.line - 1] = lines[cursorpos.line - 1].slice(0, cursorpos.character)
+      cursorpos.character = 0
       repaint()
 
     onKeyPress = (e) ->
