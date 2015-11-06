@@ -99,6 +99,16 @@ canvastext = (config) ->
           else if cursorpos.line < lines.length - 1
             cursorpos.line++
             cursorpos.character = 0
+        when 'lineStart'
+          cursorpos.character = 0
+        when 'start'
+          cursorpos.character = 0
+          cursorpos.line = 0
+        when 'lineEnd'
+          cursorpos.character = lines[cursorpos.line].length
+        when 'end'
+          cursorpos.line = lines.length - 1
+          cursorpos.character = lines[cursorpos.line].length
       repaint()
 
     onKeyDown = (e) ->
@@ -107,6 +117,8 @@ canvastext = (config) ->
       switch key
         when 8 then remove()
         when 13 then lineBreak()
+        when 35 then navigate(if e.ctrlKey then 'end' else 'lineEnd')
+        when 36 then navigate(if e.ctrlKey then 'start' else 'lineStart')
         when 37 then navigate('left')
         when 38 then navigate('up')
         when 39 then navigate('right')
