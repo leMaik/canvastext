@@ -7,5 +7,4 @@ module.exports = (fontStyle) ->
   body.appendChild(dummy)
   result = dummy.offsetHeight
   body.removeChild(dummy)
-  console.log result
   return result

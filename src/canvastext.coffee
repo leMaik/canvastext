@@ -1,5 +1,10 @@
 fontHeight = require './fontHeight'
 
+drawtext = (canvas, ctx, x, y, lines) ->
+  lineHeight = fontHeight('font: ' + ctx.font)
+  for line, i in lines
+    ctx.fillText(line, x, y + (i + 1) * lineHeight)
+
 canvastext = (config) ->
   return (->
     canvas = config.canvas
@@ -10,18 +15,17 @@ canvastext = (config) ->
       w: config.width
       h: config.height
     cursorpos = line: 0, character: 0
-    lines = [""]
+    lines = (config.text || '').split('\n')
     lineHeight = fontHeight('font: ' + ctx.font)
 
     repaint = (->
       blink = true
       last = Date.now()
-      ->
+      return (showCursor = true) ->
         ctx.clearRect(field.x, field.y, field.w, field.h)
-        for line, i in lines
-          ctx.fillText(line, field.x, field.y + (i + 1) * lineHeight)
+        drawtext(canvas, ctx, field.x, field.y, lines)
 
-        if (blink)
+        if (showCursor && blink)
           curx = field.x + ctx.measureText(lines[cursorpos.line].substr(0, cursorpos.character)).width
           cury = field.y + cursorpos.line * lineHeight
           ctx.beginPath();
@@ -113,7 +117,6 @@ canvastext = (config) ->
 
     onKeyDown = (e) ->
       key = e.keyCode || e.which
-      console.log key
       switch key
         when 8 then remove()
         when 13 then lineBreak()
@@ -129,7 +132,16 @@ canvastext = (config) ->
 
     document.addEventListener('keypress', onKeyPress)
     document.addEventListener('keydown', onKeyDown)
+
+    navigate('end')
+
+    dispose: ->
+      document.addEventListener('keypress', onKeyPress)
+      document.addEventListener('keydown', onKeyDown)
+      repaint(false) #repaint without cursor
+      return
   )()
 
 module.exports =
-  field: (config) -> canvastext(config)
+  field: canvastext
+  draw: drawtext
