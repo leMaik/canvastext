@@ -21,11 +21,11 @@ canvastext = (config) ->
     repaint = (->
       blink = true
       last = Date.now()
-      return (showCursor = true) ->
+      return (showCursor = true, forceCursor = false) ->
         ctx.clearRect(field.x, field.y, field.w, field.h)
         drawtext(canvas, ctx, field.x, field.y, lines)
 
-        if (showCursor && blink)
+        if (forceCursor || (showCursor && blink))
           curx = field.x + ctx.measureText(lines[cursorpos.line].substr(0, cursorpos.character)).width
           cury = field.y + cursorpos.line * lineHeight
           ctx.beginPath();
@@ -48,7 +48,7 @@ canvastext = (config) ->
       if cursorpos.character > 0
         cursorpos.character--
         lines[cursorpos.line] = lines[cursorpos.line].slice(0, cursorpos.character) + lines[cursorpos.line].substr(cursorpos.character + 1)
-        repaint()
+        repaint(true, true)
       else if cursorpos.line > 0
         cursorpos.line--
         cursorpos.character = lines[cursorpos.line].length
@@ -56,18 +56,18 @@ canvastext = (config) ->
         for i in [cursorpos.line + 1 ... lines.length - 1]
           lines[i] = lines[i + 1]
         lines.pop()
-        repaint()
+        repaint(true, true)
 
     forwardRemove = ->
       if cursorpos.character <  lines[cursorpos.line].length
         lines[cursorpos.line] = lines[cursorpos.line].slice(0, cursorpos.character) + lines[cursorpos.line].substr(cursorpos.character + 1)
-        repaint()
+        repaint(true, true)
       else if cursorpos.line < lines.length - 1
         lines[cursorpos.line] += lines[cursorpos.line + 1]
         for i in [cursorpos.line + 1 ... lines.length - 1]
           lines[i] = lines[i + 1]
         lines.pop()
-        repaint()
+        repaint(true, true)
 
     lineBreak = ->
       cursorpos.line++
@@ -110,7 +110,7 @@ canvastext = (config) ->
         when 'end'
           cursorpos.line = lines.length - 1
           cursorpos.character = lines[cursorpos.line].length
-      repaint()
+      repaint(true, true)
 
     onKeyPress = (e) ->
       insert String.fromCharCode(e.keyCode || e.which)
