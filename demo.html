@@ -9,6 +9,8 @@
     <canvas id='demo' width='800' height='300'></canvas>
     <script type='text/javascript'>
       var canvas = document.getElementById('demo');
+      var ctx = canvas.getContext('2d');
+      ctx.font = '12pt Arial';
       var field = canvastext.field({
         canvas: canvas,
         x: 0,

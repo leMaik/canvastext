@@ -76,9 +76,6 @@ canvastext = (config) ->
       cursorpos.character = 0
       repaint()
 
-    onKeyPress = (e) ->
-      insert String.fromCharCode(e.keyCode || e.which)
-
     navigate = (direction) ->
       switch direction
         when 'up'
@@ -114,6 +111,9 @@ canvastext = (config) ->
           cursorpos.line = lines.length - 1
           cursorpos.character = lines[cursorpos.line].length
       repaint()
+
+    onKeyPress = (e) ->
+      insert String.fromCharCode(e.keyCode || e.which)
 
     onKeyDown = (e) ->
       key = e.keyCode || e.which
