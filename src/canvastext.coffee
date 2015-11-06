@@ -35,15 +35,15 @@ canvastext = (config) ->
     )()
     setInterval(repaint, 500)
 
-    append = (character) ->
+    insert = (character) ->
+      lines[cursorpos.line] = lines[cursorpos.line].slice(0, cursorpos.character) + character + lines[cursorpos.line].substr(cursorpos.character)
       cursorpos.character++
-      lines[cursorpos.line] += character
       repaint()
 
     remove = ->
       if cursorpos.character > 0
-        char = cursorpos.character--
-        lines[cursorpos.line] = lines[cursorpos.line].slice(0, -1)
+        cursorpos.character--
+        lines[cursorpos.line] = lines[cursorpos.line].slice(0, cursorpos.character) + lines[cursorpos.line].substr(cursorpos.character + 1)
         repaint()
       else if cursorpos.line > 0
         cursorpos.line--
@@ -51,13 +51,51 @@ canvastext = (config) ->
         lines.pop()
         repaint()
 
+    forwardRemove = ->
+      if cursorpos.character <  lines[cursorpos.line].length
+        lines[cursorpos.line] = lines[cursorpos.line].slice(0, cursorpos.character) + lines[cursorpos.line].substr(cursorpos.character + 1)
+        repaint()
+      else if cursorpos.line < lines.length - 1
+        lines[cursorpos.line] += lines[cursorpos.line + 1]
+        for i in [cursorpos.line + 1 ... lines.length - 1]
+          lines[i] = lines[i + 1]
+        lines.pop()
+        repaint()
+
     lineBreak = ->
       cursorpos.line++
       lines.push('') if lines.length == cursorpos.line
       cursorpos.character = lines[cursorpos.line].length
+      repaint()
 
     onKeyPress = (e) ->
-      append String.fromCharCode(e.keyCode || e.which)
+      insert String.fromCharCode(e.keyCode || e.which)
+
+    navigate = (direction) ->
+      switch direction
+        when 'up'
+          if cursorpos.line > 0
+            cursorpos.line--
+            cursorpos.character = Math.min(lines[cursorpos.line].length, cursorpos.character)
+        when 'down'
+          if cursorpos.line < lines.length - 1
+            cursorpos.line++
+            cursorpos.character = Math.min(lines[cursorpos.line].length, cursorpos.character)
+          else
+            cursorpos.character = lines[cursorpos.line].length
+        when 'left'
+          if cursorpos.character > 0
+            cursorpos.character--
+          else if cursorpos.line > 0
+            cursorpos.line--
+            cursorpos.character = lines[cursorpos.line].length
+        when 'right'
+          if cursorpos.character < lines[cursorpos.line].length
+            cursorpos.character++
+          else if cursorpos.line < lines.length - 1
+            cursorpos.line++
+            cursorpos.character = 0
+      repaint()
 
     onKeyDown = (e) ->
       key = e.keyCode || e.which
@@ -65,6 +103,11 @@ canvastext = (config) ->
       switch key
         when 8 then remove()
         when 13 then lineBreak()
+        when 37 then navigate('left')
+        when 38 then navigate('up')
+        when 39 then navigate('right')
+        when 40 then navigate('down')
+        when 46 then forwardRemove()
         else return
       e.preventDefault()
 
