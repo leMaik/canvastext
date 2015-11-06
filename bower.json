@@ -1,0 +1,19 @@
+{
+  "name": "canvastext",
+  "version": "0.1.0",
+  "homepage": "https://github.com/leMaik/canvastext",
+  "authors": [
+    "Maik Marschner <mmarschner@welfenlab.de>"
+  ],
+  "main": "./lib/canvastext.browserified.js",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}

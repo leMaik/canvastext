@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    <title>canvastext - A textarea for canvas.</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src='lib/canvastext.browserified.js'></script>
+  </head>
+  <body>
+    <canvas id='demo' width='800' height='300'></canvas>
+    <script type='text/javascript'>
+      var canvas = document.getElementById('demo');
+      var field = canvastext.field({
+        canvas: canvas,
+        x: 0,
+        y: 0,
+        width: 800,
+        height: 800
+      });
+    </script>
+  </body>
+</html>
