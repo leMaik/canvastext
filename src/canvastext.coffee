@@ -51,39 +51,17 @@ canvastext = (config) ->
       repaint()
 
     removeSelected = ->
-      normalizedSelection = selection.normalize()
-      start = normalizedSelection.start
-      end = normalizedSelection.end
+      try
+        normalizedSelection = selection.normalize()
+        start = normalizedSelection.start
+        end = normalizedSelection.end
 
-      selectedTextStart = (line) ->
-        if line > start.line
-          return 0
-        else
-          return start.character
-
-      selectedTextEnd = (line) ->
-        if line < end.line
-          return lines[line].length
-        else
-          return end.character
-
-      for line in [start.line..end.line]
-        s = selectedTextStart(line)
-        e = selectedTextEnd(line)
-        if s == 0 && e == lines[line].length
-          lines[line] = if line == start.line then '' else null
-        else
-          lines[line] = lines[line].substring(0, s) + lines[line].substr(e)
-
-      if start.line != end.line
-        if lines[end.line] != null
-          lines[start.line] += lines[end.line]
-          lines.splice(end.line, 1)
-      lines = lines.filter (line) -> line != null
-      if lines.length == 0 then lines = ['']
-
-      resetSelection()
-      repaint(true, true)
+        lines[start.line] = lines[start.line].substr(0, start.character) + lines[end.line].substr(end.character)
+        if end.line > start.line
+          lines.splice(start.line + 1, end.line - start.line)
+        cursorpos = start
+        resetSelection()
+        repaint(true, true)
 
     remove = ->
       if !selection.isEmpty()
