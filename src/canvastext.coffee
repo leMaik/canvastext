@@ -177,6 +177,42 @@ canvastext = (config) ->
       selection.setStart cursorpos
       selection.setEnd cursorpos
 
+    selectAll = ->
+      selection.setStart line: 0, character: 0
+      end =
+        line: lines.length - 1
+        character: lines[lines.length - 1].length
+      selection.setEnd end
+      cursorpos = end
+      repaint(true, true)
+
+    getCursorAt = (x, y) ->
+      line = Math.min(lines.length - 1, Math.max(0, Math.floor((y - field.y) / lineHeight)))
+      character = 0
+      while character < lines[line].length && field.x + ctx.measureText(lines[line].substr(0, character + 1)).width <= x
+        character++
+      #TODO optimize this?
+
+      line: line
+      character: character
+
+    mouseSelection = (->
+      down = false
+      down: (e) ->
+        cursorpos = getCursorAt(e.pageX - canvas.offsetLeft, e.pageY - canvas.offsetTop)
+        selection.setStart(cursorpos)
+        selection.setEnd(cursorpos)
+        repaint(true, true)
+        down = true
+      move: (e) ->
+        if down
+          cursorpos = getCursorAt(e.pageX - canvas.offsetLeft, e.pageY - canvas.offsetTop)
+          selection.setEnd(cursorpos)
+          repaint(true, true)
+      up: (e) ->
+        down = false
+    )()
+
     onKeyPress = (e) ->
       insert String.fromCharCode(e.keyCode || e.which)
 
@@ -192,17 +228,30 @@ canvastext = (config) ->
         when 39 then navigate('right', e.shiftKey)
         when 40 then navigate('down', e.shiftKey)
         when 46 then forwardRemove()
+        when 65 # A
+          if e.ctrlKey
+            selectAll()
+          else
+            return
         else return
       e.preventDefault()
 
     document.addEventListener('keypress', onKeyPress)
     document.addEventListener('keydown', onKeyDown)
+    canvas.addEventListener('mousedown', mouseSelection.down)
+    canvas.addEventListener('mousemove', mouseSelection.move)
+    canvas.addEventListener('mouseup', mouseSelection.up)
+    canvas.addEventListener('mouseleave', mouseSelection.up)
 
     navigate('end')
 
     dispose: ->
-      document.addEventListener('keypress', onKeyPress)
-      document.addEventListener('keydown', onKeyDown)
+      document.removeEventListener('keypress', onKeyPress)
+      document.removeEventListener('keydown', onKeyDown)
+      canvas.removeEventListener('mousedown', mouseSelection.down)
+      canvas.removeEventListener('mousemove', mouseSelection.move)
+      canvas.removeEventListener('mouseup', mouseSelection.up)
+      canvas.removeEventListener('mouseleave', mouseSelection.up)
       repaint(false) #repaint without cursor
       return
   )()
