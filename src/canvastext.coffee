@@ -76,7 +76,7 @@ canvastext = (config) ->
           lines[line] = lines[line].substring(0, s) + lines[line].substr(e)
 
       if start.line != end.line
-        if lines[end.line] != null
+        if lines[end.line] != null && lines[start.line] != null
           lines[start.line] += lines[end.line]
           lines.splice(end.line, 1)
       lines = lines.filter (line) -> line != null
