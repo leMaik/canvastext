@@ -24,7 +24,11 @@ canvastext = (config) ->
       blink = true
       last = Date.now()
       return (showCursor = true, forceCursor = false) ->
-        ctx.clearRect(field.x, field.y, field.w, field.h)
+        lineHeight = fontHeight('font: ' + ctx.font)
+        if config.clearContext?
+          config.clearContext()
+        else
+          ctx.clearRect(field.x, field.y, field.w, field.h)
         drawtext(canvas, ctx, field.x, field.y, lines)
         selection.mark(canvas, ctx, field.x, field.y, lines)
 
@@ -40,7 +44,7 @@ canvastext = (config) ->
           blink = !blink || forceCursor
           last = Date.now()
     )()
-    setInterval(repaint, 500)
+    repaintInterval = setInterval(repaint, 500)
 
     insert = (character) ->
       if !selection.isEmpty()
@@ -193,12 +197,18 @@ canvastext = (config) ->
 
     onKeyPress = (e) ->
       insert String.fromCharCode(e.keyCode || e.which)
+      if config.onChange?
+        config.onChange(lines)
 
     onKeyDown = (e) ->
       key = e.keyCode || e.which
       switch key
         when 8 then remove()
-        when 13 then lineBreak()
+        when 13
+          if config.onEnterPressed? && !e.shiftKey
+            config.onEnterPressed()
+          else
+            lineBreak()
         when 35 then navigate((if e.ctrlKey then 'end' else 'lineEnd'), e.shiftKey)
         when 36 then navigate((if e.ctrlKey then 'start' else 'lineStart'), e.shiftKey)
         when 37 then navigate('left', e.shiftKey)
@@ -213,6 +223,8 @@ canvastext = (config) ->
             return
         else return
       e.preventDefault()
+      if config.onChange?
+        config.onChange(lines)
 
     document.addEventListener('keypress', onKeyPress)
     document.addEventListener('keydown', onKeyDown)
@@ -223,6 +235,9 @@ canvastext = (config) ->
 
     navigate('end')
 
+    repaint: repaint
+    text: ->
+      lines.join('\n')
     dispose: ->
       document.removeEventListener('keypress', onKeyPress)
       document.removeEventListener('keydown', onKeyDown)
@@ -230,6 +245,7 @@ canvastext = (config) ->
       canvas.removeEventListener('mousemove', mouseSelection.move)
       canvas.removeEventListener('mouseup', mouseSelection.up)
       canvas.removeEventListener('mouseleave', mouseSelection.up)
+      clearInterval(repaintInterval)
       repaint(false) #repaint without cursor
       return
   )()
