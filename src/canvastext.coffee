@@ -35,10 +35,14 @@ canvastext = (config) ->
         if (forceCursor || (showCursor && blink))
           curx = field.x + ctx.measureText(lines[cursorpos.line].substr(0, cursorpos.character)).width
           cury = field.y + cursorpos.line * lineHeight
-          ctx.beginPath();
+          console.log 'what'
+          ctx.save()
+          ctx.lineWidth = 1
+          ctx.beginPath()
           ctx.moveTo(curx, cury)
           ctx.lineTo(curx, cury + lineHeight)
-          ctx.stroke();
+          ctx.stroke()
+          ctx.restore()
 
         if forceCursor || Date.now() - last >= 450
           blink = !blink || forceCursor
